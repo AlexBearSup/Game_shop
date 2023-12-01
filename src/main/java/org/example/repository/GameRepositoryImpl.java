@@ -1,21 +1,23 @@
 package org.example.repository;
 
 import org.example.model.Game;
+import org.example.enums.RepositoryMsg;
 import org.example.repository.DAO.GameReposytory;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public class GameRepisitory implements GameReposytory {
+public class GameRepositoryImpl implements GameReposytory {
     private final Connection connection;
-    public GameRepisitory(Connection connection) {
+    public GameRepositoryImpl(Connection connection) {
         this.connection = connection;
     }
     private static final String pull = "SELECT id, name, release_date, rating, cost, description FROM games";
 
     @Override
-    public List<Game> pullerAll (){
+    public Optional<List<Game>> getAll (){
         List<Game> all = new ArrayList<>();
             try (PreparedStatement preparedStatement = connection.prepareStatement(pull);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -31,8 +33,9 @@ public class GameRepisitory implements GameReposytory {
                     all.add(game);
                 }
             } catch (SQLException e) {
-                System.err.println("Error: " + e.getMessage());
+                System.out.println(RepositoryMsg.NOT_GET_GAME.getDescription());
+                return Optional.empty();
             }
-            return all;
+            return Optional.of(all);
     }
 }

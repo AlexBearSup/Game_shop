@@ -1,38 +1,43 @@
 package org.example.service;
-import org.example.ConnectionSingletone;
-import org.example.msg.AllGeneralMsg;
-import org.example.repository.AccountRepository;
-import org.example.repository.UserRepository;
-import java.sql.SQLException;
-import java.util.Scanner;
-
+import org.example.model.Account;
+import org.example.enums.ServiceMsg;
+import org.example.repository.AccountRepositoryImpl;
 public class AccountService {
-    Scanner scanner;
-    AccountRepository accountRepository = new AccountRepository(ConnectionSingletone.getConnection());
-    UserRepository userRepository = new UserRepository(ConnectionSingletone.getConnection());
-    public AccountService(Scanner scanner) throws SQLException {
-        this.scanner = scanner;
+    private AccountRepositoryImpl accountRepository;
+    private UserService userService;
+
+    public AccountService(AccountRepositoryImpl accountRepository,
+                          UserService userService) {
+        this.accountRepository = accountRepository;
+        this.userService = userService;
     }
-    public void replenisher (){
-        System.out.println(AllGeneralMsg.TO_REFILL.getDescription() +"\n"
-                         + AllGeneralMsg.ENTER_PASS.getDescription());
-        String password = scanner.nextLine();
-        int userID = userRepository.taker(password).getId();
 
-        System.out.println(AllGeneralMsg.MONEY.getDescription() +"\n"
-                           + accountRepository.taker(userID).getAmount() +"\n"
-                           + AllGeneralMsg.TOP_UP.getDescription());
+    public int amountMoney (int userId){
+        return accountRepository.get(userId)
+                .map(Account::getAmount)
+                .orElseGet(() -> {
+                    System.out.println(ServiceMsg.ACC_NF.getDescription());
+                    return -1;
+                });
+    }
+    public int replenish (String password, int money){
 
-        while (!scanner.hasNextInt()) {
-            System.out.println(AllGeneralMsg.INCORRECT.getDescription());
-            scanner.next();
+        int userId = userService.getUserId(password);
+
+        if (amountMoney(userId) == -1){
+            System.out.println(ServiceMsg.ACC_NF.getDescription());;
+        } else {
+            System.out.println(ServiceMsg.MONEY.getDescription() +"\n"
+                    + amountMoney(userService.getUserId(password)) + " $" +"\n"
+                    + ServiceMsg.TOP_UP.getDescription());
+
+            int deposit = money + amountMoney(userId);
+
+            accountRepository.update(deposit, userId);
+
+            System.out.println(ServiceMsg.MONEY.getDescription() +"\n"
+                    + amountMoney(userId));
         }
-
-        int deposit = scanner.nextInt() + accountRepository.taker(userID).getAmount();
-        accountRepository.updater(deposit, userID);
-
-        System.out.println(AllGeneralMsg.MONEY.getDescription() +"\n"
-                           + accountRepository.taker(userID).getAmount());
-
+        return amountMoney(userId);
     }
 }

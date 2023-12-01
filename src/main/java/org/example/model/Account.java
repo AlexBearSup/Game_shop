@@ -12,5 +12,5 @@ public class Account {
     int id;
     int amount;
     String type;
-    int userID;
+    int userId;
 }

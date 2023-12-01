@@ -1,6 +1,6 @@
 package org.example.repository.DAO;
 
 public interface PurchaseRepository {
-
-    void adder (int userID, int gameID);
+    void add(int userID, int gameID);
+    boolean exists (int userId, int gameId);
 }

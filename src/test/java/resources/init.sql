@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS accounts (
     user_id INTEGER UNIQUE REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS Users_Games (
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    game_id INTEGER REFERENCES games(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS users_games (
+    USER_ID INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    GAME_ID INTEGER REFERENCES games(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, game_id)
 );
 
@@ -47,5 +47,10 @@ INSERT INTO accounts (amount, type, user_id) VALUES
     (50, 'Visa', 1),
     (150, 'Mastercard', 2),
     (75, 'Visa', 3),
-    (200, 'Mastercard', 4),
-    (120, 'Visa', 5);
+    (200, 'Mastercard', 4);
+
+
+INSERT INTO users_games (USER_ID, GAME_ID) VALUES
+    (1, 4),
+    (1, 3),
+    (1, 1);

@@ -1,7 +1,12 @@
 package org.example.repository;
 import org.example.model.User;
+import org.example.enums.RepositoryMsg;
+import org.example.repository.DAO.UserRepository;
+
 import java.sql.*;
-public class UserRepository implements org.example.repository.DAO.UserRepository {
+import java.util.Optional;
+
+public class UserRepositoryImpl implements UserRepository {
     private final Connection connection;
     private static final String save =
             """
@@ -20,12 +25,12 @@ public class UserRepository implements org.example.repository.DAO.UserRepository
                   SELECT * FROM users 
                   WHERE password = ?
             """;
-    public UserRepository(Connection connection) {
+    public UserRepositoryImpl(Connection connection) {
         this.connection = connection;
     }
 
     @Override
-    public void adder (User user) {
+    public void create (User user) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(save, PreparedStatement.RETURN_GENERATED_KEYS);
             preparedStatement.setString(1, user.getName());
@@ -37,49 +42,49 @@ public class UserRepository implements org.example.repository.DAO.UserRepository
             generatedKeys.next();
             user.setId(generatedKeys.getInt(1));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            System.out.println(RepositoryMsg.NOT_SAVE_USER.getDescription());
         }
     }
     @Override
-    public User taker (String nickname, String password)  {
+    public Optional <User> get(String nickname, String password)  {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(select);
             preparedStatement.setString(1, nickname);
             preparedStatement.setString(2, password);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()){
-                return User.builder()
+                return Optional.of(User.builder()
                         .id(resultSet.getInt("id"))
                         .name(resultSet.getString("name"))
                         .nickname(resultSet.getString("nickname"))
                         .birthday(resultSet.getDate("birthday").toLocalDate())
                         .password(resultSet.getString("password"))
-                        .build();
+                        .build());
             }
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            System.out.println(RepositoryMsg.NOT_GET_USER.getDescription());
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public User taker (String password)  {
+    public Optional<User> get (String password)  {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(selectByPass);
             preparedStatement.setString(1, password);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()){
-                return User.builder()
+                return Optional.of(User.builder()
                         .id(resultSet.getInt("id"))
                         .name(resultSet.getString("name"))
                         .nickname(resultSet.getString("nickname"))
                         .birthday(resultSet.getDate("birthday").toLocalDate())
                         .password(resultSet.getString("password"))
-                        .build();
+                        .build());
             }
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            System.out.println(RepositoryMsg.NOT_GET_USER.getDescription());
         }
-        return null;
+        return Optional.empty();
     }
 }
